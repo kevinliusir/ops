@@ -1,0 +1,34 @@
+---
+- hosts: 127.0.0.1
+  tasks:
+    #- name: 停止项目并部署项目
+    #- name: 启动项目 执行启动脚本
+    #- name: 判断项目启动结果
+    #  shell: ps aux|grep tomcat|grep -v grep|wc -l
+    #  register: result
+    #  failed_when: result.stdout|int == 0
+    - name: wait for port
+      local_action: wait_for port=8080 delay=1 timeout=300
+    - name: wait for log in startup
+      local_action: wait_for path=/usr/local/apache-tomcat-8.5.12/logs/catalina.out search_regex='Server startup' delay=1 timeout=300
+
+    - name: curl the tomcat
+      uri: url=http://127.0.0.1:8080 
+      #shell: curl http://127.0.0.1:8080
+      #shell: ps aux|grep tomcat|grep -v grep|wc -l
+      register: http_code
+      #failed_when: http_code.stdout|int != 200
+      until: http_code.status == 200
+      retries: 5
+      delay: 1
+    #- wait_for: port=8080 delay=10 timeout=300
+    #- name: result
+    #- debug: msg='{{result.stdout}}'
+      #command: echo {{result}}
+      #shell: tailf /tmp/test.log | grep 'failed'
+      #register: result
+    #- wait_for: path=/tmp/test.log search_regex=failed
+      #path: /tmp/test.log
+      #search_regex: failed
+      #local_action: wait_for path=/tmp/test.log search_regex=OpenSSH
+      #failed_when: result.stdout == 'failed'
